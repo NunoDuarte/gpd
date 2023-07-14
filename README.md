@@ -1,5 +1,7 @@
 # Grasp Pose Detection (GPD)
 
+# FORK: My fork works on Ubuntu 20.04 with ROS-noetic
+
 * [Author's website](http://www.ccs.neu.edu/home/atp/)
 * [License](https://github.com/atenpas/gpd/blob/master/LICENSE.md)
 * [ROS wrapper](https://github.com/atenpas/gpd_ros/)
