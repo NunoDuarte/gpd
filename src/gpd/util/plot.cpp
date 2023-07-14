@@ -212,6 +212,47 @@ void Plot::plotFingers3D(
   runViewer(viewer);
 }
 
+      ofstream fw("/home/nuno/Documents/kinova_grasping/tmp_data/gpd_grasp_poses.txt", std::ofstream::out);
+      
+void Plot::plotFingers3Dbest5(
+    const std::vector<std::unique_ptr<candidate::Hand>> &hand_list,
+    const PointCloudRGBA::Ptr &cloud, const std::string &str,
+    const candidate::HandGeometry &geometry, bool use_same_color) {
+  PCLVisualizer viewer = createViewer(str);
+
+  double min = std::numeric_limits<float>::max();
+  double max = std::numeric_limits<float>::min();
+  for (int i = 0; i < hand_list.size(); i++) {
+    if (hand_list[i]->getScore() < min) {
+      min = hand_list[i]->getScore();
+    }
+    if (hand_list[i]->getScore() > max) {
+      max = hand_list[i]->getScore();
+    }
+  }
+
+  Eigen::Vector3d hand_rgb;
+  if (use_same_color) {
+    hand_rgb << 0.0, 0.5, 0.5;
+  }
+
+  for (int i = 0; i < hand_list.size(); i++) {
+    if (!use_same_color) {
+        hand_rgb = Eigen::Vector3d(float(i/(hand_list.size()*1.0)), 1.0 - float(i/(hand_list.size()*1.0)), 0.0);
+    }
+    plotHand3Dbest5(viewer, *hand_list[i], geometry, i, hand_rgb);
+  }
+  fw.close();
+
+  pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> rgb(
+      cloud);
+  viewer->addPointCloud<pcl::PointXYZRGBA>(cloud, rgb, "cloud");
+  viewer->setPointCloudRenderingProperties(
+      pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "cloud");
+  runViewer(viewer);
+}
+
+
 void Plot::plotFingers3D(
     const std::vector<std::unique_ptr<candidate::Hand>> &hand_list,
     const PointCloudRGBA::Ptr &cloud, const std::string &str,
@@ -376,6 +417,62 @@ void Plot::plotHand3D(PCLVisualizer &viewer, const candidate::Hand &hand,
              geometry.depth_, geometry.height_, idx, rgb);
 }
 
+void Plot::plotHand3Dbest5(PCLVisualizer &viewer, const candidate::Hand &hand,
+                      const candidate::HandGeometry &geometry, int idx,
+                      const Eigen::Vector3d &rgb) {
+  plotHand3Dbest5(viewer, hand, geometry.outer_diameter_, geometry.finger_width_,
+             geometry.depth_, geometry.height_, idx, rgb);
+}
+
+
+
+      
+void Plot::plotHand3Dbest5(PCLVisualizer &viewer, const candidate::Hand &hand,
+                      double outer_diameter, double finger_width,
+                      double hand_depth, double hand_height, int idx,
+                      const Eigen::Vector3d &rgb) {
+  const double hw = 0.5 * outer_diameter;
+  const double base_depth = 0.02;
+  const double approach_depth = 0.07;
+
+  Eigen::Vector3d left_bottom =
+      hand.getPosition() - (hw - 0.5 * finger_width) * hand.getBinormal();
+  Eigen::Vector3d right_bottom =
+      hand.getPosition() + (hw - 0.5 * finger_width) * hand.getBinormal();
+  Eigen::VectorXd left_center =
+      left_bottom + 0.5 * hand_depth * hand.getApproach();
+  Eigen::VectorXd right_center =
+      right_bottom + 0.5 * hand_depth * hand.getApproach();
+  Eigen::Vector3d base_center = left_bottom +
+                                0.5 * (right_bottom - left_bottom) -
+                                0.01 * hand.getApproach();
+  Eigen::Vector3d approach_center = base_center - 0.04 * hand.getApproach();
+  Eigen::Vector3d final_approach = base_center + 0.05 * hand.getApproach();
+
+  const Eigen::Quaterniond quat(hand.getFrame());
+  
+
+    /*for (int i = 0; i < clusters.size(); i++) {
+		std::cout << "position \n" << clusters[i]->getPosition() << "\n";
+		std::cout << "orientation \n" << clusters[i]->getOrientation() << "\n";
+    }*/
+
+	    fw << base_center.transpose() << "\n";
+	    fw << hand.getApproach().transpose() << "\n";
+	    fw << quat.vec().transpose() << " " << quat.w() << "\n";
+  
+  const std::string num = std::to_string(idx);
+
+  plotCube(viewer, left_center, quat, hand_depth, finger_width, hand_height,
+           "left_finger_" + num, rgb);
+  plotCube(viewer, right_center, quat, hand_depth, finger_width, hand_height,
+           "right_finger_" + num, rgb);
+  plotCube(viewer, base_center, quat, base_depth, outer_diameter, hand_height,
+           "base_" + num, rgb);
+  plotCube(viewer, approach_center, quat, approach_depth, finger_width,
+           0.5 * hand_height, "approach_" + num, rgb);
+}
+
 void Plot::plotHand3D(PCLVisualizer &viewer, const candidate::Hand &hand,
                       double outer_diameter, double finger_width,
                       double hand_depth, double hand_height, int idx,
@@ -398,6 +495,7 @@ void Plot::plotHand3D(PCLVisualizer &viewer, const candidate::Hand &hand,
   Eigen::Vector3d approach_center = base_center - 0.04 * hand.getApproach();
 
   const Eigen::Quaterniond quat(hand.getFrame());
+   
   const std::string num = std::to_string(idx);
 
   plotCube(viewer, left_center, quat, hand_depth, finger_width, hand_height,
@@ -753,7 +851,7 @@ void Plot::runViewer(PCLVisualizer &viewer) {
 PCLVisualizer Plot::createViewer(std::string title) {
   PCLVisualizer viewer(new pcl::visualization::PCLVisualizer(title));
   viewer->setPosition(0, 0);
-  viewer->setSize(640, 480);
+  viewer->setSize(1920, 1080);
   viewer->setBackgroundColor(1.0, 1.0, 1.0);
   viewer->registerKeyboardCallback(&Plot::keyboardEventOccurred, *this,
                                    (void *)viewer.get());

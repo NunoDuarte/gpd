@@ -108,6 +108,11 @@ class Plot {
       const PointCloudRGBA::Ptr &cloud, std::string str,
       const candidate::HandGeometry &geometry, bool draw_all = false,
       bool draw_frame = false);
+      
+    void plotFingers3Dbest5(
+      const std::vector<std::unique_ptr<candidate::Hand>> &hand_list,
+      const PointCloudRGBA::Ptr &cloud, const std::string &str,
+      const candidate::HandGeometry &geometry, bool use_same_color = true);
 
   /**
    * \brief Plot a list of grasp sets with 3D cubes.
@@ -156,6 +161,7 @@ class Plot {
                      double outer_diameter, double finger_width,
                      double hand_depth, double hand_height,
                      bool draw_all = false);
+                  
 
   /**
    * \brief Plot a list of samples.
@@ -242,6 +248,10 @@ class Plot {
   void plotHand3D(PCLVisualizer &viewer, const candidate::Hand &hand,
                   const candidate::HandGeometry &geometry, int idx,
                   const Eigen::Vector3d &rgb);
+                  
+  void plotHand3Dbest5(PCLVisualizer &viewer, const candidate::Hand &hand,
+                  const candidate::HandGeometry &geometry, int idx,
+                  const Eigen::Vector3d &rgb);                  
 
   /**
    * \brief Plot a grasp.
@@ -253,7 +263,14 @@ class Plot {
    * \param hand_height the height of the robot hand
    * \param idx the ID of the grasp in the viewer
    */
+   
+
+                  
   void plotHand3D(PCLVisualizer &viewer, const candidate::Hand &hand,
+                  double outer_diameter, double finger_width, double hand_depth,
+                  double hand_height, int idx, const Eigen::Vector3d &rgb);
+
+  void plotHand3Dbest5(PCLVisualizer &viewer, const candidate::Hand &hand,
                   double outer_diameter, double finger_width, double hand_depth,
                   double hand_height, int idx, const Eigen::Vector3d &rgb);
 

@@ -136,7 +136,7 @@ GraspDetector::GraspDetector(const std::string &config_filename) {
     classifier_ = net::Classifier::create(
         model_file, weights_file, static_cast<net::Classifier::Device>(device),
         batch_size);
-    min_score_ = config_file.getValueOfKey<int>("min_score", 0);
+    min_score_ = config_file.getValueOfKey<int>("min_score", -100000);
     printf("============ CLASSIFIER ======================\n");
     printf("model_file: %s\n", model_file.c_str());
     printf("weights_file: %s\n", weights_file.c_str());
@@ -297,6 +297,7 @@ std::vector<std::unique_ptr<candidate::Hand>> GraspDetector::detectGrasps(
                               "Clustered Grasps", hand_geom);
     }
   } else {
+  hands[0]->print();
     clusters = std::move(hands);
   }
   double t_cluster = omp_get_wtime() - t0_cluster;
@@ -320,7 +321,7 @@ std::vector<std::unique_ptr<candidate::Hand>> GraspDetector::detectGrasps(
   printf(" TOTAL: %3.4fs\n", t_total);
 
   if (plot_selected_grasps_) {
-    plotter_->plotFingers3D(clusters, cloud.getCloudOriginal(),
+    plotter_->plotFingers3Dbest5(clusters, cloud.getCloudOriginal(),
                             "Selected Grasps", hand_geom, false);
   }
 
