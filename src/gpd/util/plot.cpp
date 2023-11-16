@@ -214,6 +214,8 @@ void Plot::plotFingers3D(
 
       ofstream fw("/home/nuno/Documents/kinova_grasping/tmp_data/gpd_grasp_poses.txt", std::ofstream::out);
       
+      ofstream fw1("/home/nuno/Documents/kinova_grasping/tmp_data/gpd_uncertainty_grasp_poses.txt", std::ofstream::out);
+      
 void Plot::plotFingers3Dbest5(
     const std::vector<std::unique_ptr<candidate::Hand>> &hand_list,
     const PointCloudRGBA::Ptr &cloud, const std::string &str,
@@ -243,6 +245,7 @@ void Plot::plotFingers3Dbest5(
     plotHand3Dbest5(viewer, *hand_list[i], geometry, i, hand_rgb);
   }
   fw.close();
+  fw1.close();
 
   pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> rgb(
       cloud);
@@ -460,6 +463,13 @@ void Plot::plotHand3Dbest5(PCLVisualizer &viewer, const candidate::Hand &hand,
 	    fw << base_center.transpose() << "\n";
 	    fw << hand.getApproach().transpose() << "\n";
 	    fw << quat.vec().transpose() << " " << quat.w() << "\n";
+	    
+	    
+	    
+	    // this is to convert gpd to pointnetgpd format
+	    fw1 << base_center.transpose() << "\n";
+	    fw1 << hand.getApproach().transpose() << "\n";
+	    fw1 << hand.getBinormal().transpose() << "\n";
   
   const std::string num = std::to_string(idx);
 
