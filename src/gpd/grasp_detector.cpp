@@ -302,11 +302,14 @@ std::vector<std::unique_ptr<candidate::Hand>> GraspDetector::detectGrasps(
   }
   double t_cluster = omp_get_wtime() - t0_cluster;
 
+  ofstream fw("/home/nuno/Documents/kinova_grasping/tmp_data/gpd_grasp_scores.txt", std::ofstream::out);
+
   // 7. Sort grasps by their score.
   std::sort(clusters.begin(), clusters.end(), isScoreGreater);
   printf("======== Selected grasps ========\n");
   for (int i = 0; i < clusters.size(); i++) {
     std::cout << "Grasp " << i << ": " << clusters[i]->getScore() << "\n";
+    fw << clusters[i]->getScore() << "\n";
   }
   printf("Selected the %d best grasps.\n", (int)clusters.size());
   double t_total = omp_get_wtime() - t0_total;
@@ -325,6 +328,7 @@ std::vector<std::unique_ptr<candidate::Hand>> GraspDetector::detectGrasps(
                             "Selected Grasps", hand_geom, false);
   }
 
+  fw.close();
   return clusters;
 }
 
